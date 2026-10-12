@@ -1,0 +1,150 @@
+\section{Introduction}
+
+\begin{frame}{Les attaquants vont plus vite que les correctifs}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{carte}[height=3.6cm,valign=top]
+        \enorme{7 jours}\\[0.25cm]
+        Délai moyen d'exploitation d'une vulnérabilité en 2025 (estimation)~: l'attaque
+        précède souvent la publication du correctif.
+      \end{carte}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{carte}[height=3.6cm,valign=top]
+        \enorme{22 secondes}\\[0.25cm]
+        Délai médian entre l'accès initial et sa passation à un autre groupe criminel
+        en 2025, contre plus de 8~heures en 2022.
+      \end{carte}
+    \end{column}
+  \end{columns}
+  \vspace{0.45cm}
+  \begin{pointcle}
+    \centering\large
+    Un détecteur qui ne reconnaît que ce qu'il a déjà vu arrive trop tard.
+  \end{pointcle}
+  \srcnote{Source~: \cite{mtrends26}}
+\end{frame}
+
+\begin{frame}{Et pourtant, la détection reste lente}
+  \begin{columns}[T]
+    \begin{column}{0.31\textwidth}
+      \begin{carte}[height=3.4cm,valign=top]
+        \enorme{14}\,\gros{jours}\\[0.25cm]
+        Durée de présence médiane avant détection (11~jours en 2024).
+        Espionnage~: 122~jours.
+      \end{carte}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{carte}[height=3.4cm,valign=top]
+        \enorme{241}\,\gros{jours}\\[0.25cm]
+        Moyenne pour identifier et contenir une violation (2025).
+        Mesure différente de la médiane de Mandiant.
+      \end{carte}
+    \end{column}
+    \begin{column}{0.31\textwidth}
+      \begin{carte}[height=3.4cm,valign=top]
+        \enorme{−80}\,\gros{jours}\\[0.25cm]
+        Gagnés en moyenne, et 1,9~M\$ économisés, avec une IA et une automatisation
+        très utilisées.
+      \end{carte}
+    \end{column}
+  \end{columns}
+  \vspace{0.4cm}
+  \begin{pointcle}
+    \centering
+    Détecter plus tôt, c'est payer moins~: l'IA est associée à des violations plus courtes.
+  \end{pointcle}
+  \srcnote{Sources~: \cite{mtrends26,ibm25}}
+\end{frame}
+
+\begin{frame}{Deux philosophies de détection}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{encadre}{Par signatures}
+        \textbf{Principe~:} reconnaître un motif d'attaque déjà connu.\\[0.25cm]
+        \oui Peu de fausses alertes sur les menaces répertoriées\\[0.1cm]
+        \non Aveugle aux attaques inconnues (zero-day, variantes)
+      \end{encadre}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{encadre}{Par anomalies \hfill \textit{notre sujet}}
+        \textbf{Principe~:} apprendre le trafic normal, signaler les écarts.\\[0.25cm]
+        \oui Peut détecter l'inconnu, même sans données étiquetées\\[0.1cm]
+        \non Fausses alertes fréquentes~; le «~normal~» évolue
+      \end{encadre}
+    \end{column}
+  \end{columns}
+  \vspace{0.4cm}
+  \begin{pointcle}
+    \textbf{Exemple~: Kitsune} (NDSS 2018), un ensemble d'autoencodeurs qui apprend en ligne,
+    sans supervision, à distinguer trafic normal et anormal, et tourne même sur un Raspberry~Pi.
+  \end{pointcle}
+  \srcnote{Sources~: \cite{survey07,kitsune18}}
+\end{frame}
+
+\begin{frame}{Une promesse difficile à tenir en production}
+  Dès 2010, Sommer et Paxson relevaient un écart frappant entre la recherche et les
+  déploiements réels. Quatre obstacles reviennent encore.
+  \vspace{0.25cm}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{carte}[height=2.15cm,valign=top]
+        \gros{Faux positifs}\\[0.05cm]
+        Trop de fausses alertes~: les vraies sont noyées (\emph{alert fatigue}).
+      \end{carte}
+      \vspace{0.15cm}
+      \begin{carte}[height=2.15cm,valign=top]
+        \gros{Trafic chiffré}\\[0.05cm]
+        Environ 98,6\,\% du trafic web humain est chiffré (2026)~: le contenu des paquets
+        est illisible.
+      \end{carte}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{carte}[height=2.15cm,valign=top]
+        \gros{Dérive du trafic}\\[0.05cm]
+        Nouvelle application, mise à jour~: le «~normal~» change, le modèle se périme.
+      \end{carte}
+      \vspace{0.15cm}
+      \begin{carte}[height=2.15cm,valign=top]
+        \gros{Qualité des données}\\[0.05cm]
+        CIC-IDS2017, référence du domaine~: plus de 20\,\% des traces reconstruites ou
+        ré-étiquetées.
+      \end{carte}
+    \end{column}
+  \end{columns}
+  \srcnote{Sources~: \cite{sommer10,survey07,zanetti15,cloudflare26,engelen21,lanvin22}}
+\end{frame}
+
+\begin{frame}{Problématique et périmètre}
+  \begin{idee}
+    \centering\large
+    Comment rendre un NIDS par anomalies fiable malgré des données réseau imparfaites~?
+  \end{idee}
+  \vspace{0.3cm}
+  \begin{columns}[T]
+    \begin{column}{0.58\textwidth}
+      \begin{carte}[height=3.1cm,valign=top]
+        \gros{Notre démarche}\\[0.1cm]
+        \begin{itemize}
+          \item Supervisé ou non supervisé~?
+          \item Un modèle, évalué sur cicids2017
+          \item Augmentation de données (SMOTE)
+          \item Des démonstrations
+        \end{itemize}
+      \end{carte}
+    \end{column}
+    \begin{column}{0.38\textwidth}
+      \begin{carte}[height=3.1cm,valign=top]
+        \gros{Périmètre}\\[0.1cm]
+        \oui Détection par anomalies sur le trafic réseau\\[0.1cm]
+        \non Attaques utilisant l'IA\\[0.05cm]
+        \non Défense des modèles d'IA eux-mêmes
+      \end{carte}
+    \end{column}
+  \end{columns}
+  \vspace{0.3cm}
+  \begin{pcompact}
+    \centering
+    Première étape~: supervisé ou non supervisé, que change le choix pour un NIDS~?
+  \end{pcompact}
+\end{frame}

@@ -1,0 +1,521 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  PRÉSENTATION BEAMER 16:9 -- gabarit INSA CENTRE VAL DE LOIRE : main.tex
+%
+%  Ce fichier est réutilisable pour n'importe quelle présentation : il contient le
+%  thème (couleurs INSA, page de titre, pied de page, encadrés, styles TikZ,
+%  pictogrammes). Le contenu est dans des fichiers séparés, importés avec \include.
+%
+%  - Nouvelle présentation : modifier le bloc « Informations du document », remplacer
+%    la liste des \include (un fichier chap_<nom>.tex par partie du plan ; chaque
+%    fichier commence par \section{...} et ne contient ni préambule ni
+%    \begin{document}), puis mettre à jour sources.bib.
+%  - Une partie du plan = un \section = un fichier. L'ordre des \include donne l'ordre
+%    du sommaire. Pour ne compiler que certaines parties (la numérotation est
+%    conservée) : décommenter \includeonly{...} plus bas.
+%  - Dans une diapositive :
+%       \begin{frame}{Titre} ... \end{frame}
+%       \intervenant{NOM}   (facultatif) « Intervenant : NOM » en haut à droite
+%       \etiquette{Texte}   (facultatif) remplace l'étiquette rouge en haut à gauche,
+%                           qui reprend sinon le titre de la section en cours
+%       \srcnote{...}       note de source en bas à gauche, ex. \srcnote{Source : \cite{cle}}
+%  - Encadrés : idee (rose, bord rouge), pointcle (pêche) et sa variante compacte pcompact
+%    (diapositives très remplies), remarque[titre] (gris), encadre{titre} (rouge), carte (beige ;
+%    carte[height=3cm,valign=top] pour aligner plusieurs cartes) avec \gros{chiffre ou mot-clé}
+%    en grand. Listes compactes dans les encadrés : puces et numeros. Coche / croix en début
+%    de ligne : \oui, \non. Tableaux : tabular ou tabularx avec \rowcolor{insarose}.
+%  - Ponctuation française : babel-french est désactivé pour « : ; ! ? » (conflit avec TikZ) ;
+%    écrire donc texte~: suite, texte~?, texte\,!, texte\,; (espace insécable à la main).
+%  - Dans les schémas TikZ d'une diapositive : toujours des accolades autour du corps d'un
+%    \foreach (le corps d'une diapositive est lu avant d'être exécuté).
+%  - Couleurs : insarouge, insagris (charte INSA), insaorange, insapeche, insapeche2,
+%    insabeige, insasafran, insarose (relevées sur la présentation Trove).
+%  - Styles TikZ des schémas : pcli, pfoc, psvc, pdat, pgris (pastilles), etiqf,
+%    fluxo, fluxr, fluxd, callout, num, acteur, vie, msg, rep (+ \seqmsg, \seqrep).
+%  - Pictogrammes TikZ : \pic at (x,y) {icone tel}; liste en fin de préambule.
+%  - Page de titre : \insatitleframe (logo images/logo_insa_blanc.png ; à défaut, un
+%    texte « INSA » est composé).
+%  - Mise en page prévue pour aspectratio=169. Texte de 10 pt : les plus petits textes
+%    des schémas restent à \footnotesize (8 pt) ou plus.
+%  - Sources : seul le nom de domaine est imprimé dans la liste (package xstring, voir « Bibliographie »),
+%    le lien complet reste cliquable dans le PDF. La liste est répartie sur trois diapositives d'après
+%    le numéro de citation (bornes dans les filtres srcA, srcB, srcC de la section « Bibliographie »).
+%  - Compilation : pdflatex main, biber main, pdflatex main, pdflatex main.
+%    (deux passes de pdflatex au minimum : sommaire, décor TikZ de chaque page)
+%  - Fichiers du projet : main.tex (gabarit et ordre des parties), un fichier par partie
+%    (pour l'instant chap_intro ; les autres parties du plan sont listées, commentées, plus bas),
+%    sources.bib, guillotime.sty et images/.
+%  - Champs à compléter : chercher \aremplir{...} (surlignage jaune) dans les fichiers de contenu.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[aspectratio=169,10pt,t]{beamer}
+
+%%%%% Informations du document (à modifier pour chaque présentation) %%%%%
+\newcommand{\nomproduit}{NIDS}   % nom de travail du projet
+\newcommand{\doctitre}{\nomproduit}
+\newcommand{\docsoustitre}{Détection d'intrusion réseau\\ par anomalies}
+\newcommand{\doctagline}{Apprendre le normal,\\ repérer l'inconnu}
+\newcommand{\docauteur}{Groupe jsp le numéro sah}
+\newcommand{\docprof}{STI 5A ASL-IA}
+\newcommand{\docecole}{INSA Centre Val de Loire}
+%\newcommand{\docdate}{\today}
+\newcommand{\docdate}{\aujourdhui}
+
+%%%%% Langue, encodage, polices %%%%%
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}          % police machine à écrire (Latin Modern)
+\usepackage{tgpagella}        % texte courant : serif proche de celui de la présentation Trove
+\usepackage{tgheros}          % titres : sans serif (équivalent d'Arial / Liberation Sans)
+% Pas de ligature en police machine à écrire : \texttt{--option} garde ses deux tirets.
+\usepackage[protrusion=false,expansion=false,tracking=false,kerning=false,spacing=false]{microtype}
+\DisableLigatures[-]{encoding = *, family = tt*}
+\usepackage[french]{babel}
+% Beamer lit le corps d'une diapositive avant de l'exécuter : les caractères actifs « : ; ! ? » de babel-french
+% casseraient alors les coordonnées polaires (\a:1.7) et la syntaxe calc (\p!0.5!\q) de TikZ. On les désactive ;
+% les espaces insécables se mettent à la main (texte~: suite, texte~?, texte\,!).
+\AtBeginDocument{\shorthandoff{:;!?}}
+\usefonttheme{serif}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{pifont}           % \ding{51} (coche), \ding{55} (croix)
+% symboles courants saisis en UTF-8 dans le texte
+\DeclareUnicodeCharacter{2248}{\ensuremath{\approx}}
+\DeclareUnicodeCharacter{2192}{\ensuremath{\rightarrow}}
+\DeclareUnicodeCharacter{2264}{\ensuremath{\leq}}
+\DeclareUnicodeCharacter{2265}{\ensuremath{\geq}}
+\DeclareUnicodeCharacter{2212}{\ensuremath{-}}
+\DeclareUnicodeCharacter{2260}{\ensuremath{\neq}}
+
+%%%%% Charte graphique INSA CVL %%%%%
+\usepackage{xcolor}
+\definecolor{insarouge}{HTML}{E42618} % rouge du logo INSA (couleur principale)
+\definecolor{insagris}{HTML}{5F5F5F}  % gris du logo INSA (couleur secondaire)
+\definecolor{insaorange}{HTML}{C57F17}  % contour et flèches des services « voisins »
+\definecolor{insapeche}{HTML}{FCDDB0}   % fond des services « voisins »
+\definecolor{insapeche2}{HTML}{FCE2BB}  % fond des encadrés d'idée
+% Couleurs relevées sur la page de titre et les encadrés de la présentation Trove
+\definecolor{insabeige}{HTML}{F8F0EC}   % panneaux clairs de la page de titre
+\definecolor{insasafran}{HTML}{F69F1D}  % blocs orange de la page de titre
+\definecolor{insarose}{HTML}{F9CECC}    % fond des encadrés « idée » et des en-têtes de tableau
+
+%%%%% Thème Beamer : structure, marges, listes %%%%%
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=1.15cm,text margin right=1.15cm}
+\setbeamercolor{structure}{fg=insarouge}
+\setbeamercolor{normal text}{fg=black,bg=white}
+\setbeamercolor{frametitle}{fg=black}
+\setbeamercolor{block title}{fg=white,bg=insarouge}
+\setbeamercolor{block body}{fg=black,bg=insarose}
+\setbeamerfont{frametitle}{family=\sffamily,series=\bfseries,size=\fontsize{15}{18}\selectfont}
+\setbeamerfont{framesubtitle}{family=\sffamily,series=\bfseries,size=\small}
+\setbeamertemplate{itemize item}{\raisebox{0.05ex}{\textcolor{insarouge}{\footnotesize$\bullet$}}}
+\setbeamertemplate{itemize subitem}{\textcolor{insagris}{\textendash}}
+\setbeamertemplate{itemize subsubitem}{\textcolor{insagris}{\tiny$\bullet$}}
+\setbeamertemplate{enumerate item}{\textcolor{insarouge}{\bfseries\insertenumlabel.}}
+\setbeamerfont{itemize/enumerate body}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subbody}{size=\small}
+\setlength{\leftmargini}{1.1em}
+\setlength{\leftmarginii}{1.1em}
+\addtolength{\itemsep}{0.1em}
+\hypersetup{pdftitle={\doctitre}, pdfauthor={\docauteur}}
+
+%%%%% Décor de chaque diapositive (étiquette de section, intervenant, pied de page rouge) %%%%%
+% Unités du décor : 1/935 de la largeur et 1/527 de la hauteur de la page (mesures relevées sur la
+% présentation Trove). \etiquette{...} et \intervenant{...} s'utilisent à l'intérieur d'une diapositive.
+\usepackage{etoolbox}
+\def\insatag{\insertsection}
+\def\insainterv{}
+\newcommand{\etiquette}[1]{\gdef\insatag{#1}}
+\newcommand{\intervenant}[1]{\gdef\insainterv{#1}}
+% les deux réglages ne valent que pour la diapositive en cours : remis à zéro au début de chaque frame
+\AtBeginEnvironment{frame}{\gdef\insatag{\insertsection}\gdef\insainterv{}}
+\newcommand{\insaunitx}{0.0010695\paperwidth}
+\newcommand{\insaunity}{0.0018975\paperheight}
+\setbeamertemplate{background}{%
+  \begin{tikzpicture}[remember picture,overlay,shift={(current page.north west)}]
+    \node[anchor=north west,inner sep=0pt,text=insarouge,font=\sffamily\bfseries\scriptsize]
+      at (1.15cm,-0.28cm) {\insatag};
+    \ifx\insainterv\empty\else
+      \node[anchor=north east,inner sep=0pt,text=insagris!70,font=\scriptsize]
+        at (\paperwidth-1.15cm,-0.28cm) {Intervenant : \insainterv};
+    \fi
+    \begin{scope}[shift={(current page.south east)},x=\insaunitx,y=-\insaunity]
+      \foreach \i in {0,...,17} {%
+        \draw[insarouge,line width={0.3pt+0.3pt*mod(\i,2)}]
+          ({-55+3.0*\i+1},-109) -- ({-55+3.0*\i+1},-55);}
+      \foreach \i in {0,...,4} {%
+        \draw[insagris!55,line width=0.35pt] ({-122+11*\i},-55) -- ({-122+11*\i},0);}
+      \fill[insarouge] (-55,-55) rectangle (0,0);
+      \node[white,font=\bfseries\large] at (-27.5,-27.5) {\insertframenumber};
+    \end{scope}
+  \end{tikzpicture}}
+\setbeamertemplate{headline}{}
+% marge basse de 0,62 cm réservée aux notes de source (\srcnote) : le contenu ne descend pas plus bas
+\setbeamertemplate{footline}{\hbox{\vrule width 0pt height 0pt depth 0.62cm}}
+\setbeamertemplate{frametitle}{%
+  \vskip0.52cm
+  {\usebeamerfont{frametitle}\usebeamercolor[fg]{frametitle}\insertframetitle\par}%
+  \vskip0.08cm}
+\setbeamertemplate{framesubtitle}{%
+  {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{frametitle}\insertframesubtitle\par}%
+  \vskip0.05cm}
+
+% Note de source en bas à gauche de la diapositive : \srcnote{Sources : \cite{cle}}
+\newcommand{\srcnote}[1]{%
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[anchor=south west,inner sep=0pt,text=insagris,font=\tiny,text width=0.72\paperwidth,align=left]
+      at ([xshift=1.15cm,yshift=0.22cm]current page.south west) {#1};
+  \end{tikzpicture}}
+
+%%%%% Sommaire : numéros rouges, pas de sous-parties %%%%%
+\setbeamertemplate{section in toc}{%
+  \leavevmode\strut\textcolor{insarouge}{\bfseries\inserttocsectionnumber.}\hspace{0.6em}\inserttocsection\strut\par\vspace{-0.85em}}
+\setbeamerfont{section in toc}{size=\large}
+\setbeamercolor{section in toc}{fg=black}
+
+%%%%% Tableaux, graphiques, schémas %%%%%
+\usepackage{array}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc, shapes.geometric, babel,
+                decorations.pathmorphing, decorations.pathreplacing, patterns}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepackage[skins]{tcolorbox}
+\tcbset{boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+
+%%%%% Pour la date %%%%%
+\usepackage[delan,parigot]{guillotime}
+
+%%%%% Lignes de code (frames [fragile]) %%%%%
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{insagris!8},
+  frame=single,
+  rulecolor=\color{insagris!60},
+  breaklines=true,
+  upquote=true,
+  showstringspaces=false,
+  literate={é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {ë}{{\"e}}1 {à}{{\`a}}1 {â}{{\^a}}1
+           {î}{{\^i}}1 {ï}{{\"i}}1 {ô}{{\^o}}1 {ù}{{\`u}}1 {û}{{\^u}}1 {ç}{{\c c}}1
+           {É}{{\'E}}1 {È}{{\`E}}1 {À}{{\`A}}1 {Ç}{{\c C}}1 {œ}{{\oe}}1
+}
+
+%%%%% Encadrés %%%%%
+% Idée à retenir (rose, bord rouge) ; point clé en une phrase (pêche, sans bord) ; remarque grise ; encadré titré.
+% (« definition » existe déjà dans Beamer : l'encadré titré s'appelle donc « encadre ».)
+\newtcolorbox{idee}{colback=insarose,colframe=insarouge,boxrule=0.7pt,arc=2pt}
+\newtcolorbox{pointcle}{colback=insapeche2,colframe=insapeche2,boxrule=0pt,arc=3pt}
+% Variante compacte du point clé (marges haute et basse réduites), pour les diapositives très remplies.
+\newtcolorbox{pcompact}{colback=insapeche2,colframe=insapeche2,boxrule=0pt,arc=3pt,top=2pt,bottom=2pt}
+\newtcolorbox{remarque}[1][Remarque]{colback=insagris!7,colframe=insagris,
+  fonttitle=\bfseries\sffamily\small,title={#1}}
+\newtcolorbox{encadre}[1]{colback=insarouge!4,colframe=insarouge,
+  fonttitle=\bfseries\sffamily\small,title={#1},before upper={\raggedright}}
+% Carte beige (chiffre clé, vignette) ; \gros{...} : chiffre ou mot-clé en grand, rouge
+\newtcolorbox{carte}[1][]{colback=insabeige,colframe=insabeige,boxrule=0pt,arc=3pt,
+  left=5pt,right=5pt,top=3pt,bottom=3pt,before upper={\raggedright},#1}
+\newcommand{\gros}[1]{{\sffamily\bfseries\large\color{insarouge}#1}}
+% \enorme{...} : chiffre d'accroche, très grand (diapositives d'ouverture)
+\newcommand{\enorme}[1]{{\sffamily\bfseries\fontsize{26}{28}\selectfont\color{insarouge}#1}}
+% \aremplir{...} : information manquante, surlignée en jaune pour ne pas passer inaperçue
+\newcommand{\aremplir}[1]{\colorbox{yellow!60}{\strut\textbf{[#1]}}}
+% Coche rouge / croix grise en début de ligne : \oui Texte ...   \non Texte ...
+\newcommand{\oui}{\textcolor{insarouge}{\ding{51}}\hspace{0.35em}}
+\newcommand{\non}{\textcolor{insagris}{\ding{55}}\hspace{0.35em}}
+% Listes compactes (corps en \footnotesize) pour les encadrés : \begin{puces}\item ...\end{puces}
+% et \begin{numeros}\item ...\end{numeros}  (les listes beamer normales restent en taille normale)
+\newenvironment{puces}
+  {\begingroup\setbeamerfont{itemize/enumerate body}{size=\footnotesize}\begin{itemize}\setlength{\itemsep}{1pt}}
+  {\end{itemize}\endgroup}
+\newenvironment{numeros}
+  {\begingroup\setbeamerfont{itemize/enumerate body}{size=\footnotesize}\begin{enumerate}\setlength{\itemsep}{1pt}}
+  {\end{enumerate}\endgroup}
+
+%%%%% Styles TikZ pour les schémas (repris du gabarit de cours) %%%%%
+% svc    : boîte d'un composant rouge pâle          svcgris : composant secondaire
+% bus    : barre horizontale                         flux    : flèche entre deux composants
+\tikzset{
+  svc/.style     = {draw=insarouge, fill=insarouge!8, thick, rounded corners=2pt,
+                    minimum height=7mm, inner sep=3pt, align=center},
+  svcgris/.style = {draw=insagris, fill=insagris!8, thick, rounded corners=2pt,
+                    minimum height=7mm, inner sep=3pt, align=center},
+  bus/.style     = {draw=insagris, fill=insagris!15, thick, minimum height=6mm, align=center},
+  flux/.style    = {-{Stealth[length=2mm]}, thick, insagris},
+}
+% Schémas « à la Trove » : pastilles colorées par rôle, flèches étiquetées, encadré d'idée.
+%   pcli  : client / utilisateur                  pfoc : élément au centre du schéma (rouge plein)
+%   psvc  : élément voisin (pêche)                pdat : donnée, ressource (rose)
+%   pgris : infrastructure, existant              etiqf: étiquette posée sur une flèche
+%   fluxo / fluxr / fluxd : flèche orange / rouge / rouge pointillée
+%   callout : encadré pêche sous le schéma         num : pastille numérotée d'une étape
+% Diagrammes de séquence : acteur (en-tête), vie (ligne de vie), msg / rep (message / réponse)
+\tikzset{
+  pastille/.style = {rounded corners=0.3cm, minimum height=0.65cm, inner xsep=7pt, inner ysep=3pt,
+                     thick, align=center, font=\footnotesize\bfseries},
+  pcli/.style  = {pastille, draw=insarouge, fill=white, text=insarouge},
+  pfoc/.style  = {pastille, draw=black, fill=insarouge, text=white, line width=1.2pt},
+  psvc/.style  = {pastille, draw=insaorange, fill=insapeche, text=black},
+  pdat/.style  = {pastille, draw=insarouge!90!black, fill=insarouge!30, text=black},
+  pgris/.style = {pastille, draw=insagris, fill=insagris!12, text=black},
+  etiqf/.style = {fill=white, inner sep=1.5pt, font=\scriptsize, text=insagris, align=center},
+  fluxo/.style = {-{Stealth[length=2mm]}, thick, insaorange},
+  fluxr/.style = {-{Stealth[length=2mm]}, thick, insarouge},
+  fluxd/.style = {-{Stealth[length=2mm]}, thick, insarouge, dashed},
+  callout/.style = {fill=insapeche2, rounded corners=3pt, inner sep=5pt, align=center,
+                    font=\footnotesize},
+  num/.style   = {circle, fill=insarouge, text=white, font=\scriptsize\bfseries, inner sep=1pt,
+                  minimum size=4.5mm},
+  acteur/.style = {draw=insarouge, fill=insarouge!8, thick, rounded corners=2pt, minimum height=0.7cm,
+                   minimum width=2.2cm, align=center, font=\footnotesize\bfseries, inner sep=3pt},
+  vie/.style   = {insagris!70, dashed, thin},
+  msg/.style   = {-{Stealth[length=2mm]}, thick, insagris},
+  rep/.style   = {-{Stealth[length=2mm]}, thick, insagris, dashed},
+}
+% Messages d'un diagramme de séquence : \seqmsg{x de départ}{x d'arrivée}{y}{numéro (ou vide)}{étiquette}
+% (flèche pleine) et \seqrep (flèche pointillée = réponse).
+\newcommand{\seqmsg}[5]{%
+  \draw[msg] (#1,#3) -- (#2,#3) node[midway, above=1pt, font=\footnotesize, align=center, text=black, fill=white, inner sep=1pt] {#5};%
+  \ifx\relax#4\relax\else\node[num] at ({#1+(#2>#1?-0.4:0.4)},#3) {#4};\fi}
+\newcommand{\seqrep}[5]{%
+  \draw[rep] (#1,#3) -- (#2,#3) node[midway, above=1pt, font=\footnotesize, align=center, text=black, fill=white, inner sep=1pt] {#5};%
+  \ifx\relax#4\relax\else\node[num] at ({#1+(#2>#1?-0.4:0.4)},#3) {#4};\fi}
+
+%%%%% Pictogrammes TikZ : \pic at (x,y) {icone ...}; (centrés, environ 1 cm de côté) %%%%%
+% Ils prennent la couleur courante : \pic[insarouge] at (0,0) {icone tel}; \pic[scale=1.5] ...
+% Liste : tel, tour, antenne, mont, immeuble, vague, cadenas, euro, code, usine, cairn,
+%         croix, coche, tente, boite, personne, drapeau, batterie, pin, alerte
+\tikzset{
+  pics/icone tel/.style = {code={
+    \draw[thick,fill=white,rounded corners=1.5pt] (-0.2,-0.36) rectangle (0.2,0.36);
+    \draw[thin,fill=insagris!12] (-0.145,-0.26) rectangle (0.145,0.27);
+    \fill (0,-0.31) circle (0.025);}},
+  pics/icone tour/.style = {code={
+    \draw[thick] (0,0.3) -- (-0.18,-0.38) (0,0.3) -- (0.18,-0.38)
+                 (-0.1,-0.1) -- (0.1,-0.1) (-0.14,-0.24) -- (0.14,-0.24);
+    \fill (0,0.32) circle (0.04);
+    \foreach \r in {0.17,0.3} {
+      \draw[thin] (0,0.32) ++(-35:\r) arc (-35:35:\r);
+      \draw[thin] (0,0.32) ++(145:\r) arc (145:215:\r);}}},
+  pics/icone antenne/.style = {code={
+    \draw[thick,fill=white,rounded corners=1.5pt] (-0.34,-0.36) rectangle (0.3,0.0);
+    \fill[insagris!35] (-0.27,-0.3) rectangle (-0.02,-0.08);
+    \fill (0.12,-0.1) circle (0.035);
+    \draw[thick] (0.2,0.0) -- (0.2,0.34);
+    \fill (0.2,0.37) circle (0.035);
+    \foreach \r in {0.14,0.24} {
+      \draw[thin] (0.2,0.37) ++(-40:\r) arc (-40:40:\r);
+      \draw[thin] (0.2,0.37) ++(140:\r) arc (140:220:\r);}}},
+  pics/icone mont/.style = {code={
+    \fill[insagris!40] (-0.5,-0.3) -- (-0.15,0.28) -- (0.2,-0.3) -- cycle;
+    \fill[insagris] (-0.12,-0.3) -- (0.24,0.4) -- (0.6,-0.3) -- cycle;
+    \fill[white] (0.24,0.4) -- (0.13,0.18) -- (0.2,0.2) -- (0.25,0.14) -- (0.31,0.2) -- (0.37,0.18) -- cycle;}},
+  pics/icone immeuble/.style = {code={
+    \draw[thick,fill=white] (-0.34,-0.36) -- (-0.34,0.22) -- (-0.18,0.38) -- (-0.08,0.16) -- (0.06,0.3)
+      -- (0.14,0.06) -- (0.3,0.2) -- (0.3,-0.36) -- cycle;
+    \foreach \x in {-0.2,0.02,0.18} \foreach \y in {-0.08,-0.25}
+      \fill (\x-0.04,\y-0.04) rectangle (\x+0.04,\y+0.04);}},
+  pics/icone vague/.style = {code={
+    \foreach \y in {-0.22,0,0.22}
+      \draw[thick,domain=-0.4:0.4,samples=24,smooth] plot (\x,{\y+0.06*sin(deg(\x*15))});}},
+  pics/icone cadenas/.style = {code={
+    \draw[thick] (-0.12,0.02) -- (-0.12,0.14) arc (180:0:0.12) -- (0.12,0.02);
+    \draw[thick,fill=white,rounded corners=1pt] (-0.2,-0.32) rectangle (0.2,0.02);
+    \fill (0,-0.15) circle (0.035);}},
+  pics/icone euro/.style = {code={
+    \draw[thick,fill=white] (0,0) circle (0.33);
+    \node[font=\bfseries\small,text=black] at (0,0) {\texteuro};}},
+  pics/icone code/.style = {code={
+    \draw[thick,line cap=round,line join=round] (-0.1,0.2) -- (-0.32,0) -- (-0.1,-0.2)
+         (0.1,0.2) -- (0.32,0) -- (0.1,-0.2) (0.07,0.27) -- (-0.07,-0.27);}},
+  pics/icone usine/.style = {code={
+    \draw[thick,fill=white] (-0.4,-0.3) -- (-0.4,0.06) -- (-0.2,0.2) -- (-0.2,0.06) -- (0,0.2) -- (0,0.06)
+      -- (0.2,0.2) -- (0.2,-0.3) -- cycle;
+    \draw[thick,fill=white] (0.2,-0.3) rectangle (0.34,0.36);
+    \fill (-0.3,-0.12) rectangle (-0.22,-0.04);\fill (-0.1,-0.12) rectangle (-0.02,-0.04);
+    \fill (0.07,-0.12) rectangle (0.15,-0.04);}},
+  pics/icone cairn/.style = {code={
+    \fill[insagris!70] (0,-0.34) ellipse (0.46 and 0.14);
+    \fill[insagris!45] (0.03,-0.1) ellipse (0.36 and 0.12);
+    \fill[insarouge]   (-0.02,0.1) ellipse (0.27 and 0.11);
+    \fill[insagris!30] (0.02,0.27) ellipse (0.18 and 0.085);
+    \fill[insasafran]  (0,0.4) ellipse (0.1 and 0.065);}},
+  pics/icone croix/.style = {code={
+    \fill[insarouge] (0,0) circle (0.17);
+    \draw[white,line width=1.3pt,line cap=round] (-0.07,-0.07) -- (0.07,0.07) (-0.07,0.07) -- (0.07,-0.07);}},
+  pics/icone coche/.style = {code={
+    \fill (0,0) circle (0.17);
+    \draw[white,line width=1.3pt,line cap=round,line join=round] (-0.08,0.0) -- (-0.025,-0.06) -- (0.08,0.07);}},
+  pics/icone tente/.style = {code={
+    \draw[thick,fill=white] (-0.42,-0.28) -- (0,0.32) -- (0.42,-0.28) -- cycle;
+    \fill (-0.11,-0.28) -- (0,0.0) -- (0.11,-0.28) -- cycle;
+    \draw[thick] (-0.5,-0.28) -- (0.5,-0.28);}},
+  pics/icone boite/.style = {code={
+    \draw[thick,fill=white] (-0.3,-0.3) rectangle (0.2,0.1);
+    \draw[thick,fill=insagris!15] (-0.3,0.1) -- (-0.15,0.3) -- (0.35,0.3) -- (0.2,0.1) -- cycle;
+    \draw[thick,fill=insagris!30] (0.2,0.1) -- (0.35,0.3) -- (0.35,-0.1) -- (0.2,-0.3) -- cycle;}},
+  pics/icone personne/.style = {code={
+    \fill (0,0.22) circle (0.1);
+    \fill (-0.2,-0.32) -- (-0.2,-0.14) arc (180:0:0.2) -- (0.2,-0.32) -- cycle;}},
+  pics/icone drapeau/.style = {code={
+    \fill[blue!60!black] (-0.3,-0.2) rectangle (-0.1,0.2);
+    \fill[white] (-0.1,-0.2) rectangle (0.1,0.2);
+    \fill[insarouge] (0.1,-0.2) rectangle (0.3,0.2);
+    \draw[insagris!60,thin] (-0.3,-0.2) rectangle (0.3,0.2);}},
+  pics/icone batterie/.style = {code={
+    \draw[thick,fill=white,rounded corners=1pt] (-0.34,-0.18) rectangle (0.26,0.18);
+    \fill (0.26,-0.07) rectangle (0.33,0.07);
+    \fill (-0.27,-0.11) rectangle (-0.07,0.11);\fill (-0.03,-0.11) rectangle (0.17,0.11);}},
+  pics/icone pin/.style = {code={
+    \fill (0,0.12) circle (0.2);
+    \fill (-0.19,0.06) -- (0,-0.36) -- (0.19,0.06) -- cycle;
+    \fill[white] (0,0.12) circle (0.08);}},
+  pics/icone alerte/.style = {code={
+    \draw[thick,fill=insapeche,line join=round] (0,0.34) -- (-0.4,-0.3) -- (0.4,-0.3) -- cycle;
+    \node[font=\bfseries\small,text=black,inner sep=0pt] at (0,-0.08) {!};}},
+}
+
+%%%%% Page de titre (décor de la page de titre de la présentation Trove) %%%%%
+% \insatitleframe : diapositive 1, sans pied de page ; logo, titre, sous-titre, auteur, école, date.
+\newcommand{\insalogo}[1]{%
+  \IfFileExists{images/logo_insa_blanc.png}%
+    {\includegraphics[width=#1]{images/logo_insa_blanc.png}}%
+    {\textcolor{white}{\sffamily\bfseries\Large INSA}\ \textcolor{white}{\sffamily\tiny CENTRE VAL DE LOIRE}}}
+\newcommand{\insatitleframe}{%
+  \begingroup
+  \setbeamertemplate{background}{}%
+  \begin{frame}[plain]
+    \begin{tikzpicture}[remember picture,overlay,shift={(current page.north west)},x=\insaunitx,y=-\insaunity]
+      % panneaux beiges, bloc rouge, blocs orange
+      \fill[insabeige] (669,0) rectangle (935,295);
+      \fill[insabeige] (609,235) rectangle (669,295);
+      \fill[insabeige] (728,295) rectangle (935,527);
+      \fill[insarouge] (0,0) -- (669,0) -- (669,235) -- (609,235) -- (609,295) -- (550,295) -- (550,353)
+        -- (0,353) -- cycle;
+      \fill[insasafran] (609,295) rectangle (728,353);
+      \fill[insasafran] (609,353) rectangle (669,413);
+      % lignes décoratives
+      \foreach \i in {0,...,30} {\draw[insarouge,line width=0.3pt] ({842+3.0*\i},0) -- ({842+3.0*\i},295);}
+      \foreach \x in {749,772,796,819} {\draw[insasafran,line width=0.4pt] (\x,295) -- (\x,527);}
+      \draw[insagris!60,line width=0.4pt] (841,295) -- (841,527);
+      \foreach \x in {65,76,87,98,109} {\draw[insarouge,line width=0.5pt] (\x,476) -- (\x,527);}
+      % grille de « + »
+      \foreach \i in {0,...,7} \foreach \j in {0,...,7} {%
+        \draw[white,line width=0.4pt] ({503+21.1*\i-3},{16+21.1*\j}) -- ({503+21.1*\i+3},{16+21.1*\j})
+                                      ({503+21.1*\i},{16+21.1*\j-3}) -- ({503+21.1*\i},{16+21.1*\j+3});}
+      % logo, titre, sous-titre
+      \node[anchor=north west,inner sep=0pt] at (65,58) {\insalogo{0.1647\paperwidth}};
+      \node[anchor=north west,inner sep=0pt,text=white,text width=0.55\paperwidth,align=left] at (63,170)
+        {{\sffamily\bfseries\fontsize{32}{34}\selectfont\doctitre\par}\vspace{0.25cm}%
+         {\sffamily\fontsize{14}{17}\selectfont\docsoustitre\par}};
+      % auteur, cursus, école, date
+      \node[anchor=north west,inner sep=0pt,align=left,text width=0.62\paperwidth] at (63,392)
+        {{\sffamily\fontsize{12}{15}\selectfont\textbf{\docauteur}\ ---\ \docprof\par}%
+         {\sffamily\fontsize{10}{14}\selectfont\color{insagris}\docecole\ ---\ \docdate\par}};
+      \node[font=\bfseries\large] at (908,497) {\insertframenumber};
+    \end{tikzpicture}
+  \end{frame}
+  \endgroup}
+
+%%%%% Bibliographie (sources.bib) %%%%%
+\usepackage{csquotes}
+\usepackage[backend=biber,style=numeric-comp,sorting=none,maxbibnames=3,minbibnames=1,
+            doi=false,isbn=false,eprint=false]{biblatex}
+\addbibresource{sources.bib}
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{100}
+\setcounter{biburllcpenalty}{100}
+\renewcommand*{\bibfont}{\fontsize{6}{7.2}\selectfont\raggedright}
+\setlength{\bibitemsep}{0.1\baselineskip}
+\AtEveryBibitem{\clearfield{urlyear}\clearfield{urlmonth}\clearfield{urlday}}
+\urlstyle{same}
+% Adresse imprimée = nom de domaine seulement (xstring) ; le lien complet reste cliquable dans le PDF.
+% Cela permet de faire tenir de nombreuses sources sur une seule diapositive.
+\usepackage{xstring}
+\newcommand{\bibhost}[1]{\StrBehind{#1}{://}[\bibhosttmp]\StrBefore{\bibhosttmp}{/}[\bibhosttmpb]%
+  \IfBeginWith{\bibhosttmpb}{www.}{\StrGobbleLeft{\bibhosttmpb}{4}}{\bibhosttmpb}}
+\DeclareFieldFormat{url}{\href{#1}{\bibhost{#1}}}
+\usepackage{multicol}
+% La liste des sources est coupée en trois diapositives d'après le numéro de citation (ordre de première citation).
+% \srcrange{n1}{n2} garde les sources numérotées de n1 à n2 ; ajuster les bornes si le nombre de sources change.
+\newcommand{\srcrange}[2]{%
+  \iffieldint{labelnumber}%
+    {\ifboolexpe{test{\ifnumless{\thefield{labelnumber}}{#1}} or test{\ifnumgreater{\thefield{labelnumber}}{#2}}}{\skipentry}{}}%
+    {\skipentry}}
+\defbibcheck{srcA}{\srcrange{1}{25}}
+\defbibcheck{srcB}{\srcrange{26}{50}}
+\defbibcheck{srcC}{\srcrange{51}{999}}
+
+\title{\doctitre}
+\author{\docauteur}
+\date{\docdate}
+
+% Pour ne compiler que certaines parties (la numérotation est conservée) :
+%\includeonly{chap_finances}
+
+\begin{document}
+
+%%%%% Page de titre : diapositive 1 %%%%%
+\insatitleframe
+
+%%%%% Sommaire (deux colonnes : parties 1 à 4, puis 5 à 8 ; ajuster si le nombre de parties change) %%%%%
+% Le sommaire se remplit au fur et à mesure que les \include ci-dessous sont activés.
+\begin{frame}{Sommaire}
+  \etiquette{Plan}
+  \begin{columns}[T]
+    \begin{column}{0.37\textwidth}
+      \vspace{0.2cm}
+      \tableofcontents[sections={1-4},hideallsubsections]
+    \end{column}
+    \begin{column}{0.37\textwidth}
+      \vspace{0.2cm}
+      \tableofcontents[sections={5-8},hideallsubsections]
+    \end{column}
+    \begin{column}{0.22\textwidth}
+      \centering
+      \vspace{0.3cm}
+      \begin{tikzpicture}[scale=2.3]
+        \pic at (0,0) {icone alerte};
+      \end{tikzpicture}\\[0.2cm]
+      {\sffamily\bfseries\color{insarouge}\doctagline}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%%%%% Parties du plan (un fichier par partie, chacun commence par \section) %%%%%
+% L'ordre des \include donne l'ordre du sommaire : pour déplacer une partie, déplacer sa ligne.
+\include{chap_intro}
+\include{chap_super}
+\include{chap_model}
+\include{chap_dataset}
+\include{chap_SMOTE}
+\include{chap_demo}
+\include{chap_hyperspecial}
+\include{chap_interactif}
+
+
+%%%%% Sources (sources.bib : appel \cite{cle} dans les diapositives) %%%%%
+% Liste sur 3 colonnes, un peu plus large que le texte courant, coupée en trois diapositives (filtres srcA, srcB, srcC).
+\newcommand{\diaposources}[2]{%
+  \begin{frame}{#2}
+    \etiquette{Sources}
+    \makebox[\textwidth][c]{\begin{minipage}{13.6cm}
+      \setlength{\columnsep}{0.3cm}
+      \begin{multicols}{3}
+        \printbibliography[heading=none,check=#1]
+      \end{multicols}
+    \end{minipage}}
+  \end{frame}}
+% Une seule diapositive de sources pour l'instant (moins de 25 références). Quand il y en aura plus,
+% remettre le titre « Sources 1/3 » et décommenter les deux lignes suivantes.
+\diaposources{srcA}{Sources~: pages consultées au \aujourdhui}
+%\diaposources{srcB}{Sources 2/3}
+%\diaposources{srcC}{Sources 3/3}
+
+\end{document}
